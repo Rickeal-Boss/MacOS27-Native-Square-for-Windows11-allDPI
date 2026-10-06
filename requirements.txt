@@ -1,0 +1,7 @@
+# Needed by source/verify_native.py and source/build_native.py.
+#
+# numpy is optional for verify_native.py -- it falls back to a slower pure
+# Pillow path for the sharpness measurement -- but CI installs it anyway so
+# the fast path is the one being exercised.
+pillow>=10.0
+numpy>=1.24
