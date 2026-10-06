@@ -1,0 +1,32 @@
+name: verify
+
+# The shipped .cur / .ani files are the product, so they are committed and
+# this workflow re-checks them on every change. Building from the Apple dump
+# is not possible here -- the dump is not in this repository.
+#
+# windows-latest is not a preference: verify_native.py loads every cursor
+# through LoadCursorFromFile and reads the real hotspot back with
+# GetIconInfo, which is the whole point of the checks.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip pillow numpy
+
+      - name: Verify the cursor package
+        run: python source/verify_native.py

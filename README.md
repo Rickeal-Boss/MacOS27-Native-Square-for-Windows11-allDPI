@@ -1,5 +1,7 @@
 # MacOS 27 Native Square — for Windows 11, all DPI
 
+[![verify](https://github.com/Rickeal-Boss/MacOS27-Native-Square-for-Windows11-allDPI/actions/workflows/verify.yml/badge.svg)](https://github.com/Rickeal-Boss/MacOS27-Native-Square-for-Windows11-allDPI/actions/workflows/verify.yml)
+
 macOS 27 "Golden Gate" 光标，按 Windows 的规则重新打包：**每一个像素都是 Apple 自己的**，
 从 `MacOS27-Windows-Cursors` dump 解码而来，没有重绘、没有描边、没有改色。
 
