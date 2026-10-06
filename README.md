@@ -124,6 +124,13 @@ python source/verify_native.py
 其中 48 px 档用的是**相对判据**：把每个 48 px 页与「同一页用 2x 源重建」的锐度比对，低于 90% 即失败。
 （第一版用的是绝对阈值 0.30，故障注入时抓不到退化——整体变糊但单看仍"达标"。绝对值判据在这里无效。）
 
+需要比对 Apple 原图 dump 的检查（热点保真、动画逐帧、48 px 锐度）在 dump 缺失时会**跳过**而不是崩掉，
+所以 CI 没有 dump 也能跑完，结果会注明 `N skipped, no Apple dump`。想跑全量就设置环境变量：
+
+```bash
+MACOS27_SRC_1X=/path/to/MacOS27-1x  MACOS27_SRC_2X=/path/to/MacOS27-2x  python source/verify_native.py
+```
+
 ## 从源码重建
 
 ```bash

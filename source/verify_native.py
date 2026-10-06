@@ -35,8 +35,17 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                     os.pardir, "out_native", "MacOS27-Native-Square")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_native import decode_pages, src_path, SLOTS, install_name, SPLIT  # noqa: E402
-SRC_2X = r"C:\Users\16896\Downloads\MacOS27-Windows-Cursors\MacOS27-2x"
-SRC_1X = r"C:\Users\16896\Downloads\MacOS27-Windows-Cursors\MacOS27-1x"
+SRC_2X = os.environ.get(
+    "MACOS27_SRC_2X",
+    r"C:\Users\16896\Downloads\MacOS27-Windows-Cursors\MacOS27-2x")
+SRC_1X = os.environ.get(
+    "MACOS27_SRC_1X",
+    r"C:\Users\16896\Downloads\MacOS27-Windows-Cursors\MacOS27-1x")
+# The Apple dump is deliberately not in this repository, so the checks that
+# compare against it have to be optional: CI (and anyone who just clones the
+# repo) can still verify the committed .cur/.ani files, which is the product.
+# Set MACOS27_SRC_1X / MACOS27_SRC_2X to run the full suite.
+HAVE_SRC = os.path.isdir(SRC_1X) and os.path.isdir(SRC_2X)
 # The documented DPI step table (About Cursors, at default pointer size)
 # asks for 32 / 48 / 64 / 96 / 128. Microsoft publishes no slider list, so
 # this constant is deliberately the builder's own ladder rather than an
@@ -65,6 +74,7 @@ u.SystemParametersInfoW.restype = w.BOOL
 
 FAILS = []
 WARN = []
+SKIPS = []
 
 
 def fail(msg):
@@ -74,6 +84,12 @@ def fail(msg):
 
 def ok(msg):
     print(f"  ok    {msg}")
+
+
+def skip(msg):
+    SKIPS.append(msg)
+    print(f"  skip  {msg} (needs the Apple dump; set MACOS27_SRC_1X/"
+          "MACOS27_SRC_2X)")
 
 
 def cur_pages(path):
@@ -206,7 +222,9 @@ def run(cur_dir, ani_dir):
     # page. That models the transform the builder performs, instead of a bare
     # proportion which would miss the padding offset for non-square art.
     names = list(originals)
-    for name in names:
+    if not HAVE_SRC:
+        skip("hotspot fidelity vs the Apple 1x original")
+    for name in (names if HAVE_SRC else []):
         src_name = SLOT_SRC[name]
         nat1 = decode_pages(open(src_path(SRC_1X, src_name), "rb").read())[0]
         nat2 = decode_pages(open(src_path(SRC_2X, src_name), "rb").read())[0]
@@ -282,25 +300,35 @@ def run(cur_dir, ani_dir):
                 i += 8 + sz + (sz & 1)
             return out
 
-        a, b = chunks(mine), chunks(ref)
-        if a.get("icons") != b.get("icons"):
-            fail(f"{name}: frame count {a.get('icons')} != native "
-                 f"{b.get('icons')}")
+        # Everything that follows this guard is a direct comparison against
+        # the Apple dump and needs it on disk. The structural checks below
+        # (square pages, page ceiling, hotspots on ink, size, and
+        # LoadCursorFromFile) need nothing but the file itself.
+        a = chunks(mine)
+        b = chunks(ref) if HAVE_SRC else None
+        if b is None:
+            skip(f"{name}: frame count, cadence and anih vs the Apple dump")
         else:
-            ok(f"{name}: {a['icons']} frames, matches the Apple dump")
-        if a.get("rate") != b.get("rate"):
-            fail(f"{name}: rate list differs from the Apple dump")
-        else:
-            ok(f"{name}: cadence preserved ({len(a.get('rate', ()))} steps)")
-        if a.get("anih", (0,) * 9)[1:3] + a.get("anih", (0,) * 9)[5:] != \
-                b.get("anih", (0,) * 9)[1:3] + b.get("anih", (0,) * 9)[5:]:
-            # cx/cy (index 3,4) are intentionally rewritten: the pages are now
-            # a ladder and the header must name the nominal size, not the
-            # single size the Apple dump happened to ship.
-            fail(f"{name}: anih fields other than cx/cy differ")
-        else:
-            ok(f"{name}: anih header preserved (cx/cy updated to "
-               f"{a['anih'][3]} to match the new page ladder)")
+            if a.get("icons") != b.get("icons"):
+                fail(f"{name}: frame count {a.get('icons')} != native "
+                     f"{b.get('icons')}")
+            else:
+                ok(f"{name}: {a['icons']} frames, matches the Apple dump")
+            if a.get("rate") != b.get("rate"):
+                fail(f"{name}: rate list differs from the Apple dump")
+            else:
+                ok(f"{name}: cadence preserved "
+                   f"({len(a.get('rate', ()))} steps)")
+            if a.get("anih", (0,) * 9)[1:3] + a.get("anih", (0,) * 9)[5:] != \
+                    b.get("anih", (0,) * 9)[1:3] + \
+                    b.get("anih", (0,) * 9)[5:]:
+                # cx/cy (index 3,4) are intentionally rewritten: the pages
+                # are now a ladder and the header must name the nominal size,
+                # not the single size the Apple dump happened to ship.
+                fail(f"{name}: anih fields other than cx/cy differ")
+            else:
+                ok(f"{name}: anih header preserved (cx/cy updated to "
+                   f"{a['anih'][3]} to match the new page ladder)")
 
         d = open(mine, "rb").read()
         i = 12
@@ -716,8 +744,10 @@ def run(cur_dir, ani_dir):
     # compares each page against the same page rebuilt from the 2x source.
     # Anything under 90% of that is the old bug coming back.
     from build_native import square_page
+    if not HAVE_SRC:
+        skip("48 px sharpness vs the same page rebuilt from the 2x source")
     _degraded = []
-    for _slot, _src, _kind in SLOTS:
+    for _slot, _src, _kind in (SLOTS if HAVE_SRC else []):
         if _kind == "ani":
             continue
         _pg = originals.get(_slot)
@@ -745,17 +775,24 @@ def run(cur_dir, ani_dir):
         fail("48 px pages are softer than the 2x source allows ("
              + ", ".join(_degraded[:4]) + "); that is the size a 150% or "
              "175% display requests")
-    else:
+    elif HAVE_SRC:
         ok("48 px pages match what the 2x source can produce, so 150% and "
            "175% get a native page rather than an upscaled 1x one")
 
     print("\n" + "=" * 62)
     for x in WARN:
         print(f"  WARN  {x}")
+    for x in SKIPS:
+        print(f"  SKIP  {x}")
     if FAILS:
         print(f"  {len(FAILS)} FAILURE(S)")
         return 1
-    print("  ALL CHECKS PASSED" + (f"  ({len(WARN)} warning(s))" if WARN
+    _tail = []
+    if WARN:
+        _tail.append(f"{len(WARN)} warning(s)")
+    if SKIPS:
+        _tail.append(f"{len(SKIPS)} skipped, no Apple dump")
+    print("  ALL CHECKS PASSED" + (f"  ({', '.join(_tail)})" if _tail
                                     else ""))
     return 0
 
