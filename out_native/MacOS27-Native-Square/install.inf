@@ -1,0 +1,36 @@
+[Version]
+Signature="$CHICAGO$"
+Provider=%Provider%
+
+[DefaultInstall]
+CopyFiles = Scheme.Cur
+AddReg    = Scheme.Reg
+
+[DestinationDirs]
+Scheme.Cur = 10,"Cursors\MacOS27-Native-Square"
+
+[Scheme.Cur]
+Arrow.cur
+Help.cur
+AppStarting.ani
+Wait.ani
+Crosshair.cur
+IBeam.cur
+NWPen.cur
+No.cur
+SizeNS.cur
+SizeWE.cur
+SizeNWSE.cur
+SizeNESW.cur
+SizeAll.cur
+UpArrow.cur
+Hand.cur
+Person.cur
+Pin.cur
+
+[Scheme.Reg]
+HKCU,"Control Panel\Cursors\Schemes",%SchemeName%,"0x00020000","%10%\Cursors\MacOS27-Native-Square\Arrow.cur,%10%\Cursors\MacOS27-Native-Square\Help.cur,%10%\Cursors\MacOS27-Native-Square\AppStarting.ani,%10%\Cursors\MacOS27-Native-Square\Wait.ani,%10%\Cursors\MacOS27-Native-Square\Crosshair.cur,%10%\Cursors\MacOS27-Native-Square\IBeam.cur,%10%\Cursors\MacOS27-Native-Square\NWPen.cur,%10%\Cursors\MacOS27-Native-Square\No.cur,%10%\Cursors\MacOS27-Native-Square\SizeNS.cur,%10%\Cursors\MacOS27-Native-Square\SizeWE.cur,%10%\Cursors\MacOS27-Native-Square\SizeNWSE.cur,%10%\Cursors\MacOS27-Native-Square\SizeNESW.cur,%10%\Cursors\MacOS27-Native-Square\SizeAll.cur,%10%\Cursors\MacOS27-Native-Square\UpArrow.cur,%10%\Cursors\MacOS27-Native-Square\Hand.cur,%10%\Cursors\MacOS27-Native-Square\Person.cur,%10%\Cursors\MacOS27-Native-Square\Pin.cur"
+
+[Strings]
+Provider = "MacOS 27 cursor scheme"
+SchemeName = "MacOS 27 (Apple Native, square multi-size)"

@@ -1,0 +1,14 @@
+# The .cur and .ani payloads are binary; never let git try to diff or
+# normalise them.
+*.cur binary
+*.ani binary
+*.png binary
+
+# The installers are Windows line-ending files and must stay that way --
+# a .cmd with LF endings can fail to run, and install.inf is parsed by
+# SetupAPI which wants CRLF too.
+*.cmd text eol=crlf
+*.reg text eol=crlf
+*.inf text eol=crlf
+*.vbs text eol=crlf
+*.txt text eol=crlf

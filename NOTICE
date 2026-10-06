@@ -1,0 +1,35 @@
+NOTICE — attribution and non-affiliation
+========================================
+
+Cursor artwork
+--------------
+Every pixel in the .cur and .ani files under out_native/ is Apple Inc.'s own
+cursor artwork, obtained from the MacOS27-Windows-Cursors dump (a .cape of
+the macOS 27 "Golden Gate" cursor resources).
+
+This repository does not redraw, retrace, recolour or otherwise alter that
+artwork. The only changes applied are to the packaging:
+
+  * pages padded to a square canvas, artwork centred (aspect ratio preserved)
+  * a full size ladder added (24/32/48/64/96/128/192/256)
+  * hotspots recomputed per page from each page's own source bitmap
+  * the AND mask corrected to be exactly the complement of the alpha channel
+
+The animation frame content, frame count and playback rate of Wait.ani and
+AppStarting.ani are Apple's; only the pixel packaging was changed.
+
+No affiliation
+--------------
+This project is not affiliated with, authorised by, or endorsed by Apple
+Inc. "macOS", "Mac" and the cursor designs are trademarks or property of
+Apple Inc.
+
+If you are the rights holder and would like this material removed, open an
+issue in this repository and it will be taken down.
+
+Licensing
+---------
+The build/verification tooling under source/ is MIT -- see LICENSE. That
+license does not extend to the cursor artwork described above. Anyone
+redistributing the .cur / .ani files should make their own assessment of the
+artwork's licensing.

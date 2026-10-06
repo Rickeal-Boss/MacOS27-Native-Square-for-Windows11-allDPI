@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# scratch space used by the fault-injection checks
+build/
+*.tmp
+
+# packaged archives are release assets, not sources
+*.zip
+
+# editor / OS noise
+.DS_Store
+Thumbs.db
+*.swp
